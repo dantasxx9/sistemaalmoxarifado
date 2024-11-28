@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Almoxarifado</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f7fc;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* Container principal */
+        .app-container {
+            width: 100%;
+            max-width: 800px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin: 20px;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            color: #4CAF50;
+        }
+
+        /* Formulário */
+        .form-section {
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #4CAF50;
+            color: white;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        /* Seção de Produtos Cadastrados */
+        .products-section {
+            margin-top: 40px;
+        }
+
+        .products-section h2 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        tr:hover {
+            background-color: #f9f9f9;
+        }
+
+        .btn-remove {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .btn-remove:hover {
+            background-color: #e53935;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="header">
+            <h1>Cadastro de Produto</h1>
+        </header>
+
+        <section class="form-section">
+            <form id="formProduto">
+                <div class="input-group">
+                    <label for="nome">Nome do Produto:</label>
+                    <input type="text" id="nome" placeholder="Nome do produto" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="descricao">Descrição:</label>
+                    <textarea id="descricao" placeholder="Descrição do produto" required></textarea>
+                </div>
+
+                <div class="input-group">
+                    <label for="preco">Preço (R$):</label>
+                    <input type="number" id="preco" placeholder="Preço do produto" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="quantidade">Quantidade:</label>
+                    <input type="number" id="quantidade" placeholder="Quantidade disponível" required>
+                </div>
+
+                <button type="submit">Cadastrar Produto</button>
+            </form>
+        </section>
+
+        <section class="products-section">
+            <h2>Produtos Cadastrados</h2>
+            <table id="tabelaProdutos">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Descrição</th>
+                        <th>Preço</th>
+                        <th>Quantidade</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Produtos serão listados aqui -->
+                </tbody>
+            </table>
+        </section>
+    </div>
+
+    <script>
+        function carregarProdutos() {
+            const produtos = JSON.parse(localStorage.getItem('produtos')) || [];
+            const tabelaProdutos = document.querySelector('#tabelaProdutos tbody');
+            tabelaProdutos.innerHTML = '';
+
+            produtos.forEach((produto, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${produto.nome}</td>
+                    <td>${produto.descricao}</td>
+                    <td>R$ ${produto.preco.toFixed(2)}</td>
+                    <td>${produto.quantidade}</td>
+                    <td><button class="btn-remove" onclick="removerProduto(${index})">Remover</button></td>
+                `;
+                tabelaProdutos.appendChild(tr);
+            });
+        }
+
+        function cadastrarProduto(event) {
+            event.preventDefault();  
+
+            const nome = document.querySelector('#nome').value;
+            const descricao = document.querySelector('#descricao').value;
+            const preco = parseFloat(document.querySelector('#preco').value);
+            const quantidade = parseInt(document.querySelector('#quantidade').value);
+
+            if (nome && descricao && preco && quantidade) {
+                const produto = {
+                    nome,
+                    descricao,
+                    preco,
+                    quantidade
+                };
+
+                const produtos = JSON.parse(localStorage.getItem('produtos')) || [];
+                produtos.push(produto);
+
+                localStorage.setItem('produtos', JSON.stringify(produtos));
+
+                document.querySelector('#formProduto').reset();
+                carregarProdutos();
+            } else {
+                alert('Por favor, preencha todos os campos!');
+            }
+        }
+
+        function removerProduto(index) {
+            const produtos = JSON.parse(localStorage.getItem('produtos')) || [];
+            produtos.splice(index, 1);  // Remove o produto pela posição (index)
+
+            localStorage.setItem('produtos', JSON.stringify(produtos));
+            carregarProdutos();
+        }
+
+        document.querySelector('#formProduto').addEventListener('submit', cadastrarProduto);
+        carregarProdutos();
+    </script>
+</body>
+</html>
